@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_DATABASE: auth-sgbd
+      MYSQL_USER: fslab
+      MYSQL_PASSWORD: fslab
+      MYSQL_ROOT_PASSWORD: fslab
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    networks:
+      fslab-Mysql-Prisma-network:
+        ipv4_address: 172.20.0.2
+    volumes:
+      - ./data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: fslab
+    ports:
+      - '8081:80'
+    networks:
+      fslab-Mysql-Prisma-network:
+        ipv4_address: 172.20.0.3
+
+# criando a rede para os containers
+networks:
+  fslab-Mysql-Prisma-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+
+volumes:
+  data:

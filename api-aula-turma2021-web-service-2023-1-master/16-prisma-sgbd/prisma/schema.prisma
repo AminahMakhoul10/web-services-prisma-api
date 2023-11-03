@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  
+}
+
+model Usuarios {
+  id             String           @id @default(uuid())
+  nome           String           @db.VarChar(200)
+  email          String           @unique @db.VarChar(255)
+  senha          String           @db.VarChar(255)
+  ativo          Boolean          @default(false)
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @updatedAt
+  UsuariosGrupos UsuariosGrupos[]
+  UsuariosRotas  UsuariosRotas[]  @relation("usuarios")
+
+  @@map("usuarios")
+}
+
+model Rotas {
+  id            String          @id @default(uuid())
+  rota          String          @db.VarChar(255)
+  dominio       String          @db.VarChar(255)
+  verbo_get     Boolean         @default(true)
+  verbo_post    Boolean         @default(true)
+  verbo_put     Boolean         @default(true)
+  verbo_delete  Boolean         @default(true)
+  verbo_patch   Boolean         @default(true)
+  ativo         Boolean         @default(true)
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  GruposRotas   GruposRotas[]   @relation("rotas")
+  UsuariosRotas UsuariosRotas[] @relation("rotas")
+
+  @@unique([dominio, rota])
+  @@map("rotas")
+}
+
+model Grupos {
+  id             String           @id @default(uuid())
+  nome           String
+  descricao      String?
+  ativo          Boolean          @default(true)
+  unidade        String
+  GruposRotas    GruposRotas[]    @relation("grupos")
+  UsuariosGrupos UsuariosGrupos[]
+
+  @@unique([nome, unidade])
+  @@map("grupos")
+}
+
+model GruposRotas {
+  grupo_id     String
+  rota_id      String
+  verbo_get    Boolean  @default(true)
+  verbo_post   Boolean  @default(true)
+  verbo_put    Boolean  @default(true)
+  verbo_delete Boolean  @default(true)
+  verbo_patch  Boolean  @default(true)
+  ativo        Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  grupos       Grupos   @relation("grupos", fields: [grupo_id], references: [id])
+  rotas        Rotas    @relation("rotas", fields: [rota_id], references: [id])
+
+  @@id([grupo_id, rota_id])
+  @@unique([grupo_id, rota_id])
+  @@index([rota_id], map: "grupos_rotas_rota_id_fkey")
+  @@map("grupos_rotas")
+}
+
+model UsuariosRotas {
+  usuario_id   String
+  rota_id      String
+  verbo_get    Boolean  @default(true)
+  verbo_post   Boolean  @default(true)
+  verbo_put    Boolean  @default(true)
+  verbo_delete Boolean  @default(true)
+  verbo_patch  Boolean  @default(true)
+  ativo        Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  rotas        Rotas    @relation("rotas", fields: [rota_id], references: [id])
+  usuarios     Usuarios @relation("usuarios", fields: [usuario_id], references: [id])
+
+  @@id([usuario_id, rota_id])
+  @@unique([usuario_id, rota_id])
+  @@index([rota_id], map: "usuarios_rotas_rota_id_fkey")
+  @@map("usuarios_rotas")
+}
+
+model UsuariosGrupos {
+  usuario_id String
+  grupo_id   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  grupos     Grupos   @relation(fields: [grupo_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_usuarios_grupos_grupos")
+  usuarios   Usuarios @relation(fields: [usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_usuarios_grupos_usuarios")
+
+  @@id([usuario_id, grupo_id])
+  @@unique([usuario_id, grupo_id], map: "usuario_id_grupo_id")
+  @@index([grupo_id], map: "FK_usuarios_grupos_grupos")
+  @@map("usuarios_grupos")
+}
