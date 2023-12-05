@@ -1,14 +1,18 @@
 import express from "express";
 import usuarios from "./usuariosRoutes.js";
+import rotas from "./rotasRoutes.js";
+import grupos from "./gruposRoutes.js";
 
 const routes = (app) => {
-    app.route('/').get((rep, res) => {
+    app.route('/').get((req, res) => {
         res.status(200).redirect("/docs") // redirecionando para documentação
     })
 
     app.use(
         express.json(),
-        usuarios
+        usuarios,
+        rotas,
+        grupos
     )
 }
 

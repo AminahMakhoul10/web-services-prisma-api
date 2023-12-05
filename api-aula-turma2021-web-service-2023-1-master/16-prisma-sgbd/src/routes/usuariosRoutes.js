@@ -261,8 +261,4 @@ router
  *          description: Erro interno do servidor.
  * 
 */
-
-
-
-
 export default router;
